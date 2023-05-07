@@ -6,11 +6,13 @@ import (
 	"net/http"
 )
 
+// Will verify vadility and size of cookie
 var (
 	ErrValueTooLong = errors.New("cookie value too long")
 	ErrInvalidValue = errors.New("invalid cookie value")
 )
 
+// Function to encode cookie
 func Write(w http.ResponseWriter, cookie http.Cookie) error {
 	// Encode cookie value using base64.
 	cookie.Value = base64.URLEncoding.EncodeToString([]byte(cookie.Value))
@@ -26,6 +28,7 @@ func Write(w http.ResponseWriter, cookie http.Cookie) error {
 	return nil
 }
 
+// Function to decode cookie
 func Read(r *http.Request, name string) (string, error) {
 	// Reads the cookie
 	cookie, err := r.Cookie(name)
