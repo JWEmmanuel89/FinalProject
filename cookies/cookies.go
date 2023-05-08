@@ -1,6 +1,8 @@
 package cookies
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
 	"encoding/base64"
 	"errors"
 	"net/http"
@@ -46,4 +48,52 @@ func Read(r *http.Request, name string) (string, error) {
 
 	// Returns decoded cookie value.
 	return string(value), nil
+}
+
+// Tampering proof cookie
+func WriteSigned(w http.ResponseWriter, cookie http.Cookie, secretKey []byte) error {
+	// Calculate a HMAC signature of the cookie name and value.
+	mac := hmac.New(sha256.New, secretKey)
+	mac.Write([]byte(cookie.Name))
+	mac.Write([]byte(cookie.Value))
+	signature := mac.Sum(nil)
+
+	// Prepend the cookie value with the HMAC signature.
+	cookie.Value = string(signature) + cookie.Value
+
+	// Base64-encode the new cookie value and write the cookie.
+	return Write(w, cookie)
+}
+
+func ReadSigned(r *http.Request, name string, secretKey []byte) (string, error) {
+	// Read in the signed value from the cookie.
+	// "{signature}{original value}".
+	signedValue, err := Read(r, name)
+	if err != nil {
+		return "", err
+	}
+
+	// A SHA256 HMAC signature has a fixed length of 32 bytes.
+	// Ensure that the length is at least this long.
+	if len(signedValue) < sha256.Size {
+		return "", ErrInvalidValue
+	}
+
+	// Split the signature and original cookie value.
+	signature := signedValue[:sha256.Size]
+	value := signedValue[sha256.Size:]
+
+	// Recalculate the HMAC signature.
+	mac := hmac.New(sha256.New, secretKey)
+	mac.Write([]byte(name))
+	mac.Write([]byte(value))
+	expectedSignature := mac.Sum(nil)
+
+	// Check recalculated signature matches the signature received.
+	if !hmac.Equal([]byte(signature), expectedSignature) {
+		return "", ErrInvalidValue
+	}
+
+	// Return the original cookie value.
+	return value, nil
 }
