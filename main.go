@@ -11,12 +11,11 @@ import (
 	"github.com/JWEmmanuel89/FinalProject/cookies"
 )
 
-/*
-// Function to initialize new cookie
+/*// Function to initialize new cookie
 func setCookieHandler(w http.ResponseWriter, r *http.Request) {
 	cookie := http.Cookie{
-		Name:  "myCookie",
-		Value: "Final Project on Cookies!",
+		Name: "myCookie",
+		Value:    "Final Project on Cookies!",
 		//Value:    "Vowels as special characters: à, è, ì, ò, ù!",
 		Path:     "/",
 		MaxAge:   0,
@@ -73,8 +72,7 @@ func main() {
 	}
 }
 
-/*
-// Function to initialize new cookie
+/*// Function to initialize new cookie
 // with special characters
 func setCookieHandler(w http.ResponseWriter, r *http.Request) {
 	cookie := http.Cookie{
